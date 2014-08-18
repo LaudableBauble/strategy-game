@@ -11,8 +11,8 @@ namespace StrategyGameHelper
 {
     public static class Helper
     {
-        //static string ROOT = @"C:\Users\Sebastian\Desktop\html5\3DMap_Test\";
-        static string ROOT = @"C:\Users\swibbe\Desktop\html5\3DMap_Test\";
+        static string ROOT = @"C:\Users\Sebastian\Desktop\html5\3DMap_Test\";
+        //static string ROOT = @"C:\Users\swibbe\Desktop\html5\3DMap_Test\";
 
         public enum TerrainType
         {
