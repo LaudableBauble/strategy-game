@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EUIV_ModHelper", "EUIV_ModHelper\EUIV_ModHelper.csproj", "{061682F7-97F2-4D6C-8E8F-392BC5E7FE11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrategyGameHelper", "StrategyGameHelper\StrategyGameHelper.csproj", "{B862EDB2-F04E-4E31-A526-BE9746FBE082}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{061682F7-97F2-4D6C-8E8F-392BC5E7FE11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{061682F7-97F2-4D6C-8E8F-392BC5E7FE11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{061682F7-97F2-4D6C-8E8F-392BC5E7FE11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{061682F7-97F2-4D6C-8E8F-392BC5E7FE11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B862EDB2-F04E-4E31-A526-BE9746FBE082}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B862EDB2-F04E-4E31-A526-BE9746FBE082}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B862EDB2-F04E-4E31-A526-BE9746FBE082}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B862EDB2-F04E-4E31-A526-BE9746FBE082}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
