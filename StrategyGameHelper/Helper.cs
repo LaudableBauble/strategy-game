@@ -468,5 +468,9 @@ namespace StrategyGameHelper
 
             return true;
         }
+        public static TileSelectionGroups GetNaturalSelectionGroup(Tile t)
+        {
+            return TileSelectionGroups.Blue;
+        }
     }
 }

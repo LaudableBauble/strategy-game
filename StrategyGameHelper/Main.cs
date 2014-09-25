@@ -17,22 +17,32 @@ namespace StrategyGameHelper
         private bool _EnableGrid;
         private bool _FillEmptyTiles;
         private PictureBox[] _PictureBoxes;
+        private TileAttributes _LastAttributeChanged;
 
         public Main()
         {
             InitializeComponent();
 
+            //Source panel.
             Point pt = new Point(tbcMain.Location.X + 15, tbcMain.Location.Y + 32);
             pnlTileSource.Parent = this;
-            //panel1.Location = this.PointToClient(panel1.PointToScreen(pt));
             pnlTileSource.Location = pt;
             pnlTileSource.BringToFront();
             pnlTileSource.Hide();
+
+            //Selected tiles panel.
+            pt = new Point(tbcMain.Width - 25 - pnlSelectedTiles.Width, tbcMain.Location.Y + 32);
+            pnlSelectedTiles.Parent = this;
+            pnlSelectedTiles.Location = pt;
+            pnlSelectedTiles.BringToFront();
+            pnlSelectedTiles.Hide();
+            pnlSelectedTiles.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
             TileHandler.Initialize();
 
             //Add the columns.
             lstvTileSource.Columns.Add("Path", -2, HorizontalAlignment.Left);
+            lstvTileAttributes.Columns.Add("Attribute", -2, HorizontalAlignment.Left);
             ReloadSourcePanel();
 
             var img = TileHandler.GetTileImage(TileTab.Source).Image;
@@ -76,6 +86,38 @@ namespace StrategyGameHelper
                 }
             }
         }
+        private void ReloadSelectedTilesPanel()
+        {
+            lstvTileAttributes.Items.Clear();
+
+            foreach (var ta in TileHandler.GetAttributeCountOfSelectedTiles())
+            {
+                if (ta.Value == 0) { continue; }
+
+                //If this item has already been added, just update it. Otherwise create it.
+                ListViewItem lstvItem = lstvTileAttributes.Items.Count != 0 ? lstvTileAttributes.Items.Cast<ListViewItem>().FirstOrDefault(x => (TileAttributes)x.Tag == ta.Key) : null;
+                if (lstvItem == null)
+                {
+                    //Add an item.
+                    lstvItem = new ListViewItem(ta.Key.ToString() + " (" + ta.Value + "/" + TileHandler.SelectedTiles.Count + ")", 0);
+                    lstvItem.Tag = ta.Key;
+
+                    //The data.
+                    //lstvItem.SubItems.Add(item.ResourceItem.ResourceData.LastName);
+
+                    //Add the item row to the list view.
+                    lstvTileAttributes.Items.Add(lstvItem);
+                }
+                else
+                {
+                    //Just update what's neccessary.
+                    //lstvItem.SubItems[5].Text = item.Location.ToString();
+                }
+            }
+
+            cmbTileAttribute.Items.Clear();
+            cmbTileAttribute.Items.AddRange(Enum.GetValues(typeof(TileAttributes)).OfType<object>().ToArray());
+        }
 
         private void OnMainPaint(object sender, PaintEventArgs e)
         {
@@ -95,20 +137,32 @@ namespace StrategyGameHelper
             Brush red = new SolidBrush(Color.FromArgb(50, 255, 10, 10));
             Brush blue = new SolidBrush(Color.FromArgb(50, 10, 10, 255));
             Brush green = new SolidBrush(Color.FromArgb(50, 10, 255, 10));
+            Brush gray = new SolidBrush(Color.FromArgb(100, 10, 10, 10));
 
             //Draw grid.
             for (int y = 0; y < yCount; y++) { g.DrawLine(p, xStart, yStart + y * tileSize, xStart + (xCount - 1) * tileSize, yStart + y * tileSize); }
             for (int x = 0; x < xCount; x++) { g.DrawLine(p, xStart + x * tileSize, yStart, xStart + x * tileSize, yStart + (yCount - 1) * tileSize); }
 
-            //Draw cells.
+            //Draw cell groups.
             foreach (var t in ti.GetTiles())
             {
                 var x = xStart + (t.Index % ti.ColumnsPerRow) * ti.TileSize;
                 var y = yStart + (t.Index / ti.ColumnsPerRow) * ti.TileSize;
 
-                if (t.Attribute == TileAttribute.Selected) { g.FillRectangle(blue, x, y, tileSize, tileSize); }
-                else if (t.Attribute == TileAttribute.AllowedNeighbor) { g.FillRectangle(green, x, y, tileSize, tileSize); }
-                else if (t.Attribute == TileAttribute.DisallowedNeighbor) { g.FillRectangle(red, x, y, tileSize, tileSize); }
+                if (t.SelectionGroup == TileSelectionGroups.Blue) { g.FillRectangle(blue, x, y, tileSize, tileSize); }
+                else if (t.SelectionGroup == TileSelectionGroups.Green) { g.FillRectangle(green, x, y, tileSize, tileSize); }
+                else if (t.SelectionGroup == TileSelectionGroups.Red) { g.FillRectangle(red, x, y, tileSize, tileSize); }
+
+                if (TileHandler.SelectedTiles.Contains(t.Index)) { g.FillRectangle(gray, x, y, tileSize, tileSize); }
+            }
+
+            //Draw cell selections.
+            foreach (var t in TileHandler.SelectedTiles)
+            {
+                var x = xStart + (t % ti.ColumnsPerRow) * ti.TileSize;
+                var y = yStart + (t / ti.ColumnsPerRow) * ti.TileSize;
+
+                if (TileHandler.SelectedTiles.Contains(t)) { g.FillRectangle(gray, x, y, tileSize, tileSize); }
             }
         }
         private void btnGrid_Click(object sender, EventArgs e)
@@ -127,20 +181,13 @@ namespace StrategyGameHelper
             var yStart = pctb.Height / 2 - TileHandler.GetHeight((TileTab)tbcMain.SelectedIndex) / 2;
             int xPos = (e.X - xStart) / tileSize;
             int yPos = (e.Y - yStart) / tileSize;
-            var ta = TileAttribute.None;
 
-            switch (e.Button)
-            {
-                case MouseButtons.Left: ta = TileAttribute.Selected; break;
-                case MouseButtons.Right: ta = ckbFlipButtons.Checked ? TileAttribute.DisallowedNeighbor : TileAttribute.AllowedNeighbor; break;
-                case MouseButtons.Middle: ta = ckbFlipButtons.Checked ? TileAttribute.AllowedNeighbor : TileAttribute.DisallowedNeighbor; break;
-            }
-
-            TileHandler.SelectTile(xPos, yPos, ta, (TileTab)tbcMain.SelectedIndex, e.Clicks);
+            TileHandler.SelectTile(xPos, yPos, (TileTab)tbcMain.SelectedIndex, e.Clicks);
 
             lblSelectedTile.Text = "Selected Tile: " + TileHandler.SelectedTile;
             //Init the selected tile neighbor test.
             pctb.Invalidate();
+            ReloadSelectedTilesPanel();
         }
         private void btnSaveConfig_Click(object sender, EventArgs e)
         {
@@ -183,9 +230,10 @@ namespace StrategyGameHelper
             var pctb = (PictureBox)tbcMain.SelectedTab.Controls[0];
             var ti = TileHandler.GetTileImage((TileTab)tbcMain.SelectedIndex);
 
-            if (!ti.IsAnyTileSelected()) { ti.SelectAllTiles(); }
-            else { ti.DeselectAllTiles(); }
+            if (TileHandler.SelectedTiles.Count != ti.NumberOfTiles) { TileHandler.SelectAll((TileTab)tbcMain.SelectedIndex); }
+            else { TileHandler.DeselectAll((TileTab)tbcMain.SelectedIndex); }
 
+            ReloadSelectedTilesPanel();
             pctb.Invalidate();
         }
         private void pctbMain_MouseMove(object sender, MouseEventArgs e)
@@ -211,6 +259,11 @@ namespace StrategyGameHelper
         {
             if (pnlTileSource.Visible) { pnlTileSource.Hide(); }
             else { pnlTileSource.Show(); }
+        }
+        private void btnToggleSelectedPanel_Click(object sender, EventArgs e)
+        {
+            if (pnlSelectedTiles.Visible) { pnlSelectedTiles.Hide(); }
+            else { pnlSelectedTiles.Show(); ReloadSelectedTilesPanel(); }
         }
         private void lstvTileSource_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -298,6 +351,39 @@ namespace StrategyGameHelper
         private void bgwDisallowGroups_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             pgbarMain.Value = 0;
+        }
+        private void btnAddAttribute_Click(object sender, EventArgs e)
+        {
+            TileHandler.AddAttributeToSelectedTiles(_LastAttributeChanged);
+            ReloadSelectedTilesPanel();
+        }
+        private void btnRemoveAttribute_Click(object sender, EventArgs e)
+        {
+            if (lstvTileAttributes.SelectedItems.Count == 0) { return; }
+            TileHandler.RemoveAttributeFromSelectedTiles((TileAttributes)lstvTileAttributes.SelectedItems[0].Tag);
+            ReloadSelectedTilesPanel();
+        }
+        private void cmbTileAttribute_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            _LastAttributeChanged = (TileAttributes)cmbTileAttribute.SelectedItem;
+        }
+        private void ctxitemDeselectFromAttribute_Click(object sender, EventArgs e)
+        {
+            if (lstvTileAttributes.SelectedItems.Count == 0) { return; }
+            TileHandler.DeselectFromAttribute((TileAttributes)lstvTileAttributes.SelectedItems[0].Tag);
+            ReloadSelectedTilesPanel();
+            pctbMain.Invalidate();
+            pctbTileTest.Invalidate();
+            pctbSelectedTile.Invalidate();
+        }
+        private void ctxitemSelectFromAttribute_Click(object sender, EventArgs e)
+        {
+            if (lstvTileAttributes.SelectedItems.Count == 0) { return; }
+            TileHandler.SelectFromAttribute((TileAttributes)lstvTileAttributes.SelectedItems[0].Tag);
+            ReloadSelectedTilesPanel();
+            pctbMain.Invalidate();
+            pctbTileTest.Invalidate();
+            pctbSelectedTile.Invalidate();
         }
     }
 }

@@ -1,0 +1,31 @@
+﻿##################################################
+#################### THOUGHTS ####################
+##################################################
+
+Source Images
+	Main tab and you switch image through the panel. Each image has an identifier so tiles from different source images work at the same time.
+
+Randomized Map
+	Selected tiles from wherever (let the user select where from?) gets randomized into a new map, adhering to the tile rules in the process.
+
+TileTest
+	A selected tile will be put in the middle of a 3x3 square, thus having a tile on each side of it. Makes creating rules for it simpler.
+
+
+TileRules
+	Basic rules that either allow or disallow a tile to neighbor another in a specific direction.
+
+Selection
+	Tiles can be selected (works independently from SelectionGroups).
+	A panel lets the user assign stuff to the selected tiles.
+
+SelectionGroups
+	Selected tiles will be put into groups, which then can be worked with in different ways. (By color?)
+	The SelectionGroups can then be mapped to specific attributes/actions.
+
+TileData
+	Each tile can have a number of attributes mapped to it, such as terrain type etc.
+
+
+TileHandler
+	

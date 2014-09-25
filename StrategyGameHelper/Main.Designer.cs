@@ -28,9 +28,16 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.btnGrid = new System.Windows.Forms.Button();
             this.tbcMain = new System.Windows.Forms.TabControl();
             this.tabTileSource = new System.Windows.Forms.TabPage();
+            this.pnlSelectedTiles = new System.Windows.Forms.Panel();
+            this.grpbSelectedTiles = new System.Windows.Forms.GroupBox();
+            this.btnRemoveAttribute = new System.Windows.Forms.Button();
+            this.btnAddAttribute = new System.Windows.Forms.Button();
+            this.cmbTileAttribute = new System.Windows.Forms.ComboBox();
+            this.lstvTileAttributes = new System.Windows.Forms.ListView();
             this.pnlTileSource = new System.Windows.Forms.Panel();
             this.grpbTileSource = new System.Windows.Forms.GroupBox();
             this.lstvTileSource = new System.Windows.Forms.ListView();
@@ -53,18 +60,23 @@
             this.btnToggleSourcePanel = new System.Windows.Forms.Button();
             this.bgwGuessRules = new System.ComponentModel.BackgroundWorker();
             this.btnGuessRules = new System.Windows.Forms.Button();
-            this.ckbFlipButtons = new System.Windows.Forms.CheckBox();
             this.mnuMain = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.disallowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disallowContactBetweenSelectedGroupsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.disallowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bgwDisallowGroups = new System.ComponentModel.BackgroundWorker();
+            this.btnToggleSelectedPanel = new System.Windows.Forms.Button();
+            this.ctxmnuMain = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ctxitemSelectFromAttribute = new System.Windows.Forms.ToolStripMenuItem();
+            this.ctxitemDeselectFromAttribute = new System.Windows.Forms.ToolStripMenuItem();
             this.tbcMain.SuspendLayout();
             this.tabTileSource.SuspendLayout();
+            this.pnlSelectedTiles.SuspendLayout();
+            this.grpbSelectedTiles.SuspendLayout();
             this.pnlTileSource.SuspendLayout();
             this.grpbTileSource.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pctbMain)).BeginInit();
@@ -74,6 +86,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pctbSelectedTile)).BeginInit();
             this.stspMain.SuspendLayout();
             this.mnuMain.SuspendLayout();
+            this.ctxmnuMain.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnGrid
@@ -104,6 +117,7 @@
             // tabTileSource
             // 
             this.tabTileSource.AutoScroll = true;
+            this.tabTileSource.Controls.Add(this.pnlSelectedTiles);
             this.tabTileSource.Controls.Add(this.pnlTileSource);
             this.tabTileSource.Controls.Add(this.pctbMain);
             this.tabTileSource.Location = new System.Drawing.Point(4, 22);
@@ -113,6 +127,69 @@
             this.tabTileSource.TabIndex = 1;
             this.tabTileSource.Text = "Tile Source";
             this.tabTileSource.UseVisualStyleBackColor = true;
+            // 
+            // pnlSelectedTiles
+            // 
+            this.pnlSelectedTiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pnlSelectedTiles.Controls.Add(this.grpbSelectedTiles);
+            this.pnlSelectedTiles.Location = new System.Drawing.Point(548, 6);
+            this.pnlSelectedTiles.Name = "pnlSelectedTiles";
+            this.pnlSelectedTiles.Size = new System.Drawing.Size(219, 499);
+            this.pnlSelectedTiles.TabIndex = 3;
+            // 
+            // grpbSelectedTiles
+            // 
+            this.grpbSelectedTiles.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpbSelectedTiles.Controls.Add(this.btnRemoveAttribute);
+            this.grpbSelectedTiles.Controls.Add(this.btnAddAttribute);
+            this.grpbSelectedTiles.Controls.Add(this.cmbTileAttribute);
+            this.grpbSelectedTiles.Controls.Add(this.lstvTileAttributes);
+            this.grpbSelectedTiles.Location = new System.Drawing.Point(3, 3);
+            this.grpbSelectedTiles.Name = "grpbSelectedTiles";
+            this.grpbSelectedTiles.Size = new System.Drawing.Size(211, 491);
+            this.grpbSelectedTiles.TabIndex = 0;
+            this.grpbSelectedTiles.TabStop = false;
+            this.grpbSelectedTiles.Text = "Selected Tiles";
+            // 
+            // btnRemoveAttribute
+            // 
+            this.btnRemoveAttribute.Location = new System.Drawing.Point(134, 462);
+            this.btnRemoveAttribute.Name = "btnRemoveAttribute";
+            this.btnRemoveAttribute.Size = new System.Drawing.Size(71, 23);
+            this.btnRemoveAttribute.TabIndex = 4;
+            this.btnRemoveAttribute.Text = "Remove";
+            this.btnRemoveAttribute.UseVisualStyleBackColor = true;
+            this.btnRemoveAttribute.Click += new System.EventHandler(this.btnRemoveAttribute_Click);
+            // 
+            // btnAddAttribute
+            // 
+            this.btnAddAttribute.Location = new System.Drawing.Point(6, 462);
+            this.btnAddAttribute.Name = "btnAddAttribute";
+            this.btnAddAttribute.Size = new System.Drawing.Size(71, 23);
+            this.btnAddAttribute.TabIndex = 3;
+            this.btnAddAttribute.Text = "Add";
+            this.btnAddAttribute.UseVisualStyleBackColor = true;
+            this.btnAddAttribute.Click += new System.EventHandler(this.btnAddAttribute_Click);
+            // 
+            // cmbTileAttribute
+            // 
+            this.cmbTileAttribute.FormattingEnabled = true;
+            this.cmbTileAttribute.Location = new System.Drawing.Point(6, 435);
+            this.cmbTileAttribute.Name = "cmbTileAttribute";
+            this.cmbTileAttribute.Size = new System.Drawing.Size(199, 21);
+            this.cmbTileAttribute.TabIndex = 2;
+            this.cmbTileAttribute.SelectedIndexChanged += new System.EventHandler(this.cmbTileAttribute_SelectedIndexChanged);
+            // 
+            // lstvTileAttributes
+            // 
+            this.lstvTileAttributes.ContextMenuStrip = this.ctxmnuMain;
+            this.lstvTileAttributes.GridLines = true;
+            this.lstvTileAttributes.Location = new System.Drawing.Point(6, 19);
+            this.lstvTileAttributes.Name = "lstvTileAttributes";
+            this.lstvTileAttributes.Size = new System.Drawing.Size(199, 410);
+            this.lstvTileAttributes.TabIndex = 1;
+            this.lstvTileAttributes.UseCompatibleStateImageBehavior = false;
+            this.lstvTileAttributes.View = System.Windows.Forms.View.Details;
             // 
             // pnlTileSource
             // 
@@ -236,7 +313,7 @@
             // btnDefaultRules
             // 
             this.btnDefaultRules.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnDefaultRules.Location = new System.Drawing.Point(1127, 694);
+            this.btnDefaultRules.Location = new System.Drawing.Point(1001, 694);
             this.btnDefaultRules.Name = "btnDefaultRules";
             this.btnDefaultRules.Size = new System.Drawing.Size(79, 23);
             this.btnDefaultRules.TabIndex = 7;
@@ -335,24 +412,13 @@
             // btnGuessRules
             // 
             this.btnGuessRules.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnGuessRules.Location = new System.Drawing.Point(1042, 694);
+            this.btnGuessRules.Location = new System.Drawing.Point(916, 694);
             this.btnGuessRules.Name = "btnGuessRules";
             this.btnGuessRules.Size = new System.Drawing.Size(79, 23);
             this.btnGuessRules.TabIndex = 13;
             this.btnGuessRules.Text = "Guess Rules";
             this.btnGuessRules.UseVisualStyleBackColor = true;
             this.btnGuessRules.Click += new System.EventHandler(this.btnGuessRules_Click);
-            // 
-            // ckbFlipButtons
-            // 
-            this.ckbFlipButtons.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ckbFlipButtons.AutoSize = true;
-            this.ckbFlipButtons.Location = new System.Drawing.Point(916, 698);
-            this.ckbFlipButtons.Name = "ckbFlipButtons";
-            this.ckbFlipButtons.Size = new System.Drawing.Size(104, 17);
-            this.ckbFlipButtons.TabIndex = 14;
-            this.ckbFlipButtons.Text = "Flip Right Button";
-            this.ckbFlipButtons.UseVisualStyleBackColor = true;
             // 
             // mnuMain
             // 
@@ -397,6 +463,13 @@
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
             // 
+            // disallowToolStripMenuItem
+            // 
+            this.disallowToolStripMenuItem.Name = "disallowToolStripMenuItem";
+            this.disallowToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
+            this.disallowToolStripMenuItem.Text = "Disallow \"blank\" tiles (r)";
+            this.disallowToolStripMenuItem.Click += new System.EventHandler(this.disallowToolStripMenuItem_Click);
+            // 
             // rulesToolStripMenuItem
             // 
             this.rulesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -412,13 +485,6 @@
             this.disallowContactBetweenSelectedGroupsToolStripMenuItem.Text = "Disallow contact between selected groups (e)";
             this.disallowContactBetweenSelectedGroupsToolStripMenuItem.Click += new System.EventHandler(this.disallowContactBetweenSelectedGroupsToolStripMenuItem_Click);
             // 
-            // disallowToolStripMenuItem
-            // 
-            this.disallowToolStripMenuItem.Name = "disallowToolStripMenuItem";
-            this.disallowToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.disallowToolStripMenuItem.Text = "Disallow \"blank\" tiles (r)";
-            this.disallowToolStripMenuItem.Click += new System.EventHandler(this.disallowToolStripMenuItem_Click);
-            // 
             // bgwDisallowGroups
             // 
             this.bgwDisallowGroups.WorkerReportsProgress = true;
@@ -426,12 +492,45 @@
             this.bgwDisallowGroups.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bgwDisallowGroups_ProgressChanged);
             this.bgwDisallowGroups.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgwDisallowGroups_RunWorkerCompleted);
             // 
+            // btnToggleSelectedPanel
+            // 
+            this.btnToggleSelectedPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnToggleSelectedPanel.Location = new System.Drawing.Point(1118, 694);
+            this.btnToggleSelectedPanel.Name = "btnToggleSelectedPanel";
+            this.btnToggleSelectedPanel.Size = new System.Drawing.Size(78, 23);
+            this.btnToggleSelectedPanel.TabIndex = 16;
+            this.btnToggleSelectedPanel.Text = "Toggle Panel";
+            this.btnToggleSelectedPanel.UseVisualStyleBackColor = true;
+            this.btnToggleSelectedPanel.Click += new System.EventHandler(this.btnToggleSelectedPanel_Click);
+            // 
+            // ctxmnuMain
+            // 
+            this.ctxmnuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ctxitemSelectFromAttribute,
+            this.ctxitemDeselectFromAttribute});
+            this.ctxmnuMain.Name = "ctxmnuMain";
+            this.ctxmnuMain.Size = new System.Drawing.Size(239, 70);
+            // 
+            // ctxitemSelectFromAttribute
+            // 
+            this.ctxitemSelectFromAttribute.Name = "ctxitemSelectFromAttribute";
+            this.ctxitemSelectFromAttribute.Size = new System.Drawing.Size(238, 22);
+            this.ctxitemSelectFromAttribute.Text = "Select tiles with this attribute";
+            this.ctxitemSelectFromAttribute.Click += new System.EventHandler(this.ctxitemSelectFromAttribute_Click);
+            // 
+            // ctxitemDeselectFromAttribute
+            // 
+            this.ctxitemDeselectFromAttribute.Name = "ctxitemDeselectFromAttribute";
+            this.ctxitemDeselectFromAttribute.Size = new System.Drawing.Size(238, 22);
+            this.ctxitemDeselectFromAttribute.Text = "Deselect tiles with this attribute";
+            this.ctxitemDeselectFromAttribute.Click += new System.EventHandler(this.ctxitemDeselectFromAttribute_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1208, 742);
-            this.Controls.Add(this.ckbFlipButtons);
+            this.Controls.Add(this.btnToggleSelectedPanel);
             this.Controls.Add(this.btnGuessRules);
             this.Controls.Add(this.btnToggleSourcePanel);
             this.Controls.Add(this.btnRefreshRuleTest);
@@ -452,6 +551,8 @@
             this.tbcMain.ResumeLayout(false);
             this.tabTileSource.ResumeLayout(false);
             this.tabTileSource.PerformLayout();
+            this.pnlSelectedTiles.ResumeLayout(false);
+            this.grpbSelectedTiles.ResumeLayout(false);
             this.pnlTileSource.ResumeLayout(false);
             this.grpbTileSource.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pctbMain)).EndInit();
@@ -464,6 +565,7 @@
             this.stspMain.PerformLayout();
             this.mnuMain.ResumeLayout(false);
             this.mnuMain.PerformLayout();
+            this.ctxmnuMain.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -492,10 +594,8 @@
         private System.Windows.Forms.Panel pnlTileSource;
         private System.Windows.Forms.Button btnToggleSourcePanel;
         private System.Windows.Forms.GroupBox grpbTileSource;
-        private System.Windows.Forms.ListView lstvTileSource;
         private System.ComponentModel.BackgroundWorker bgwGuessRules;
         private System.Windows.Forms.Button btnGuessRules;
-        private System.Windows.Forms.CheckBox ckbFlipButtons;
         private System.Windows.Forms.MenuStrip mnuMain;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadConfigurationToolStripMenuItem;
@@ -505,6 +605,17 @@
         private System.Windows.Forms.ToolStripMenuItem disallowContactBetweenSelectedGroupsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem disallowToolStripMenuItem;
         private System.ComponentModel.BackgroundWorker bgwDisallowGroups;
+        private System.Windows.Forms.Button btnToggleSelectedPanel;
+        private System.Windows.Forms.Panel pnlSelectedTiles;
+        private System.Windows.Forms.GroupBox grpbSelectedTiles;
+        private System.Windows.Forms.ListView lstvTileSource;
+        private System.Windows.Forms.ListView lstvTileAttributes;
+        private System.Windows.Forms.Button btnRemoveAttribute;
+        private System.Windows.Forms.Button btnAddAttribute;
+        private System.Windows.Forms.ComboBox cmbTileAttribute;
+        private System.Windows.Forms.ContextMenuStrip ctxmnuMain;
+        private System.Windows.Forms.ToolStripMenuItem ctxitemSelectFromAttribute;
+        private System.Windows.Forms.ToolStripMenuItem ctxitemDeselectFromAttribute;
     }
 }
 

@@ -8,26 +8,6 @@ using System.Web.Script.Serialization;
 
 namespace StrategyGameHelper
 {
-    public enum TileAttribute
-    {
-        None, Selected, AllowedNeighbor, DisallowedNeighbor
-    }
-
-    public struct Tile
-    {
-        /// <summary>
-        /// Local index.
-        /// </summary>
-        public int Index;
-        public TileAttribute Attribute;
-
-        public Tile(int index, TileAttribute ta)
-        {
-            Index = index;
-            Attribute = ta;
-        }
-    }
-
     public class TileImage
     {
         public string Path { get; set; }
@@ -37,12 +17,12 @@ namespace StrategyGameHelper
         [ScriptIgnore]
         public Bitmap Image { get; set; }
         public bool IsTileSource { get; set; }
-        private List<Tile> TileAttributes { get; set; }
+        private Dictionary<int, Tile> TileData { get; set; }
 
         public TileImage()
         {
             IsTileSource = false;
-            TileAttributes = new List<Tile>();
+            TileData = new Dictionary<int, Tile>();
             TileSize = 32;
         }
         public TileImage(string path, string identifier, bool isTileSource)
@@ -50,53 +30,59 @@ namespace StrategyGameHelper
             Path = path;
             Identifier = identifier;
             IsTileSource = isTileSource;
-            TileAttributes = new List<Tile>();
+            TileData = new Dictionary<int, Tile>();
             TileSize = 32;
         }
 
-        public void AddTile(Tile ta)
+        public void SetSelectionGroup(int index, TileSelectionGroups tsg)
         {
-            TileAttributes.RemoveAll(t => t.Index == ta.Index);
-            TileAttributes.Add(ta);
+            if (TileData.ContainsKey(index)) { TileData[index].SelectionGroup = tsg; }
+            else { TileData[index] = new Tile(index, tsg); }
         }
-        public TileAttribute GetTileAttribute(int index)
+        public void AddAttribute(int index, TileAttributes ta)
         {
-            return TileAttributes.Find(t => t.Index == index).Attribute;
-        }
-        public void ClearTile(int index)
-        {
-            TileAttributes.RemoveAll(item => item.Index == index);
-        }
-        public List<Tile> GetSelectedTiles()
-        {
-            return TileAttributes.FindAll(t => t.Attribute == TileAttribute.Selected);
-        }
-        public List<Tile> GetAllowedNeighborTiles()
-        {
-            return TileAttributes.FindAll(t => t.Attribute == TileAttribute.AllowedNeighbor);
-        }
-        public List<Tile> GetDisallowedNeighborTiles()
-        {
-            return TileAttributes.FindAll(t => t.Attribute == TileAttribute.DisallowedNeighbor);
-        }
-        public void SelectAllTiles()
-        {
-            for (int i = 0; i <= NumberOfIndeces - 1; i++)
+            if (TileData.ContainsKey(index)) { TileData[index].AddAttribute(ta); }
+            else
             {
-                AddTile(new Tile(i, TileAttribute.Selected));
+                var t = new Tile(index);
+                t.AddAttribute(ta);
+                TileData[index] = t;
             }
         }
-        public void DeselectAllTiles()
+        public void RemoveAttribute(int index, TileAttributes ta)
         {
-            TileAttributes.RemoveAll(t => t.Attribute == TileAttribute.Selected);
+            if (TileData.ContainsKey(index)) { TileData[index].RemoveAttribute(ta); }
         }
-        public bool IsAnyTileSelected()
+        public TileSelectionGroups GetSelectionGroup(int index)
         {
-            return TileAttributes.Exists(t => t.Attribute == TileAttribute.Selected);
+            return TileData.ContainsKey(index) ? TileData[index].SelectionGroup : TileSelectionGroups.None;
+        }
+        public void ClearSelectionGroup(int index)
+        {
+            if (TileData.ContainsKey(index)) { TileData[index].SelectionGroup = TileSelectionGroups.None; }
+        }
+        public List<Tile> GetTiles(Predicate<Tile> match)
+        {
+            return TileData.Values.ToList().FindAll(match);
+        }
+        public List<Tile> GetGroupedTiles(TileSelectionGroups tsg)
+        {
+            return TileData.Values.ToList().FindAll(t => t.SelectionGroup == tsg);
+        }
+        public void GroupAllTiles(TileSelectionGroups tsg)
+        {
+            for (int i = 0; i <= NumberOfTiles - 1; i++)
+            {
+                SetSelectionGroup(i, tsg);
+            }
+        }
+        public bool IsAnyTileGrouped()
+        {
+            return TileData.Values.ToList().Exists(t => t.SelectionGroup != TileSelectionGroups.None);
         }
         public List<Tile> GetTiles()
         {
-            return new List<Tile>(TileAttributes);
+            return new List<Tile>(TileData.Values);
         }
         public void Load()
         {
@@ -116,7 +102,7 @@ namespace StrategyGameHelper
         {
             get { return Image.Height / TileSize; }
         }
-        public int NumberOfIndeces
+        public int NumberOfTiles
         {
             get { return ColumnsPerRow * RowsPerColumn; }
         }

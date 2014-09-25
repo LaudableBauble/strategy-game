@@ -22,10 +22,12 @@ namespace StrategyGameHelper
         public static int[,] RandomizedMap;
         public static int[,] RuleTestMap;
         private static Dictionary<int, List<TileRule>> _TileRules;
+        private static bool _CanMultiSelect;
         private static Bitmap _Blank;
 
         public static int SelectedSource { get; set; }
         public static int SelectedTile { get; set; }
+        public static List<int> SelectedTiles { get; private set; }
         public static Random Random { get; set; }
         public static int TileSize { get { return SourceImages[SelectedSource].TileSize; } }
 
@@ -52,6 +54,8 @@ namespace StrategyGameHelper
             _TileRules = new Dictionary<int, List<TileRule>>();
 
             SelectedSource = 0;
+            SelectedTiles = new List<int>();
+            _CanMultiSelect = true;
         }
         public static void SaveConfiguration()
         {
@@ -76,7 +80,7 @@ namespace StrategyGameHelper
             SourceImages.FindAll(item => item.IsTileSource).ForEach(item => item.Load());
         }
 
-        public static void SelectTile(int xPos, int yPos, TileAttribute ta, TileTab tab, int clicks)
+        public static void SelectTile(int xPos, int yPos, TileTab tab, int clicks)
         {
             var ti = TileHandler.GetTileImage(tab);
             var tileSize = ti.TileSize;
@@ -87,19 +91,8 @@ namespace StrategyGameHelper
 
             if (clicks == 1)
             {
-                var current = ti.GetTileAttribute(index);
-                if (ta == TileAttribute.Selected)
-                {
-                    ti.AddTile(new Tile(index, current == ta ? TileAttribute.None : ta));
-                }
-                else if (ta == TileAttribute.AllowedNeighbor)
-                {
-                    ti.AddTile(new Tile(index, current == ta ? TileAttribute.None : ta));
-                }
-                else if (ta == TileAttribute.DisallowedNeighbor)
-                {
-                    ti.AddTile(new Tile(index, current == ta ? TileAttribute.None : ta));
-                }
+                if (SelectedTiles.Contains(index)) { SelectedTiles.Remove(index); }
+                else { SelectedTiles.Add(index); }
             }
             else
             {
@@ -111,29 +104,81 @@ namespace StrategyGameHelper
                 }
             }
         }
+        public static void SelectAll(TileTab tab)
+        {
+            DeselectAll(tab);
+            for (int i = 0; i <= GetTileImage(tab).NumberOfTiles - 1; i++) { SelectedTiles.Add(i); }
+        }
+        public static void DeselectAll(TileTab tab)
+        {
+            SelectedTiles.Clear();
+        }
+        public static void SelectFromAttribute(TileAttributes ta)
+        {
+            if (SelectedTiles.Count == 0) { return; }
+            var tiles = GetSelectedTiles().Where(t => t.Attributes.Contains(ta));
+            SelectedTiles = tiles.Select(t => t.Index).ToList();
+        }
+        public static void DeselectFromAttribute(TileAttributes ta)
+        {
+            if (SelectedTiles.Count == 0) { return; }
+            var tiles = GetSelectedTiles().Where(t => !t.Attributes.Contains(ta));
+            SelectedTiles = tiles.Select(t => t.Index).ToList();
+        }
+        public static void AddAttributeToSelectedTiles(TileAttributes ta)
+        {
+            foreach (var i in SelectedTiles) { SourceImages[SelectedSource].AddAttribute(i, ta); }
+        }
+        public static void RemoveAttributeFromSelectedTiles(TileAttributes ta)
+        {
+            foreach (var i in SelectedTiles) { SourceImages[SelectedSource].RemoveAttribute(i, ta); }
+        }
+        public static List<TileAttributes> GetCommonAttributesOfSelectedTiles()
+        {
+            if (SelectedTiles.Count == 0) { return new List<TileAttributes>(); }
+            var tiles = GetSelectedTiles();
+            if (SelectedTiles.Count != tiles.Count) { return new List<TileAttributes>(); }
+            var attributes = Enum.GetValues(typeof(TileAttributes)).OfType<TileAttributes>().ToList();
+            return attributes.Where(ta => tiles.Count > 0 && tiles.All(t => t.Attributes.Contains(ta))).ToList();
+        }
+        public static Dictionary<TileAttributes, int> GetAttributeCountOfSelectedTiles()
+        {
+            if (SelectedTiles.Count == 0) { return new Dictionary<TileAttributes, int>(); }
+            var tiles = GetSelectedTiles();
+
+            var count = new Dictionary<TileAttributes, int>();
+            foreach (var a in Enum.GetValues(typeof(TileAttributes)).OfType<TileAttributes>().ToList()) { count.Add(a, 0); }
+            foreach (var t in tiles) { foreach (var ta in t.Attributes) { count[ta]++; } }
+            return count;
+        }
+        public static void GroupSelectedTiles(TileTab tab, TileSelectionGroups tsg)
+        {
+            var ti = TileHandler.GetTileImage(tab);
+            foreach (var i in SelectedTiles) { ti.SetSelectionGroup(i, tsg); }
+        }
         public static void DisallowAllAroundSelected(TileTab tab)
         {
             var ti = GetTileImage(tab);
-            foreach (var t in ti.GetSelectedTiles())
+            foreach (var t in ti.GetTiles(t => t.SelectionGroup != TileSelectionGroups.None))
             {
                 //West.
-                ti.AddTile(new Tile(t.Index - 1, TileAttribute.DisallowedNeighbor));
+                ti.SetSelectionGroup(t.Index - 1, TileSelectionGroups.Red);
                 //East.
-                ti.AddTile(new Tile(t.Index + 1, TileAttribute.DisallowedNeighbor));
+                ti.SetSelectionGroup(t.Index + 1, TileSelectionGroups.Red);
                 //North.
-                ti.AddTile(new Tile(t.Index - ti.ColumnsPerRow, TileAttribute.DisallowedNeighbor));
+                ti.SetSelectionGroup(t.Index - ti.ColumnsPerRow, TileSelectionGroups.Red);
                 //South.
-                ti.AddTile(new Tile(t.Index + ti.ColumnsPerRow, TileAttribute.DisallowedNeighbor));
+                ti.SetSelectionGroup(t.Index + ti.ColumnsPerRow, TileSelectionGroups.Red);
             }
         }
         public static void DisallowEverythingNotAttributed(TileTab tab)
         {
             var ti = GetTileImage(tab);
-            for (int i = 0; i < ti.NumberOfIndeces; i++)
+            for (int i = 0; i < ti.NumberOfTiles; i++)
             {
                 if (!ti.GetTiles().Exists(item => i == item.Index))
                 {
-                    ti.AddTile(new Tile(i, TileAttribute.DisallowedNeighbor));
+                    ti.SetSelectionGroup(i, TileSelectionGroups.Red);
                 }
             }
         }
@@ -176,7 +221,7 @@ namespace StrategyGameHelper
             var ti = GetTileImage(tab);
 
             //Blue is selected tile, green allowed neighbors, red disallowed neighbors.
-            foreach (var t in ti.GetSelectedTiles())
+            foreach (var t in ti.GetTiles())
             {
                 var index = GetTileIndex(t.Index, tab);
                 var west = t.Index - 1;
@@ -186,27 +231,27 @@ namespace StrategyGameHelper
                 var rt = RuleType.None;
 
                 //West.
-                if (ti.GetTileAttribute(west) == TileAttribute.AllowedNeighbor || ti.GetTileAttribute(west) == TileAttribute.DisallowedNeighbor)
+                if (ti.GetSelectionGroup(west) == TileSelectionGroups.Green || ti.GetSelectionGroup(west) == TileSelectionGroups.Red)
                 {
-                    rt = ti.GetTileAttribute(west) == TileAttribute.AllowedNeighbor ? RuleType.Allowed : RuleType.Disallowed;
+                    rt = ti.GetSelectionGroup(west) == TileSelectionGroups.Green ? RuleType.Allowed : RuleType.Disallowed;
                     AddRule(new TileRule(index, GetTileIndex(west, tab), Direction.West, ti.Identifier, rt));
                 }
                 //East.
-                if (ti.GetTileAttribute(east) == TileAttribute.AllowedNeighbor || ti.GetTileAttribute(east) == TileAttribute.DisallowedNeighbor)
+                if (ti.GetSelectionGroup(east) == TileSelectionGroups.Green || ti.GetSelectionGroup(east) == TileSelectionGroups.Red)
                 {
-                    rt = ti.GetTileAttribute(east) == TileAttribute.AllowedNeighbor ? RuleType.Allowed : RuleType.Disallowed;
+                    rt = ti.GetSelectionGroup(east) == TileSelectionGroups.Green ? RuleType.Allowed : RuleType.Disallowed;
                     AddRule(new TileRule(index, GetTileIndex(east, tab), Direction.East, ti.Identifier, rt));
                 }
                 //North.
-                if (ti.GetTileAttribute(north) == TileAttribute.AllowedNeighbor || ti.GetTileAttribute(north) == TileAttribute.DisallowedNeighbor)
+                if (ti.GetSelectionGroup(north) == TileSelectionGroups.Green || ti.GetSelectionGroup(north) == TileSelectionGroups.Red)
                 {
-                    rt = ti.GetTileAttribute(north) == TileAttribute.AllowedNeighbor ? RuleType.Allowed : RuleType.Disallowed;
+                    rt = ti.GetSelectionGroup(north) == TileSelectionGroups.Green ? RuleType.Allowed : RuleType.Disallowed;
                     AddRule(new TileRule(index, GetTileIndex(north, tab), Direction.North, ti.Identifier, rt));
                 }
                 //South.
-                if (ti.GetTileAttribute(south) == TileAttribute.AllowedNeighbor || ti.GetTileAttribute(south) == TileAttribute.DisallowedNeighbor)
+                if (ti.GetSelectionGroup(south) == TileSelectionGroups.Green || ti.GetSelectionGroup(south) == TileSelectionGroups.Red)
                 {
-                    rt = ti.GetTileAttribute(south) == TileAttribute.AllowedNeighbor ? RuleType.Allowed : RuleType.Disallowed;
+                    rt = ti.GetSelectionGroup(south) == TileSelectionGroups.Green ? RuleType.Allowed : RuleType.Disallowed;
                     AddRule(new TileRule(index, GetTileIndex(south, tab), Direction.South, ti.Identifier, rt));
                 }
             }
@@ -237,9 +282,9 @@ namespace StrategyGameHelper
         public static void CreateRulesFromDisallowAllBetweenGroups(TileTab tab, BackgroundWorker worker)
         {
             var ti = GetTileImage(tab);
-            var group1 = ti.GetSelectedTiles();
-            var group2 = ti.GetAllowedNeighborTiles();
-            var group3 = ti.GetDisallowedNeighborTiles();
+            var group1 = ti.GetTiles();
+            var group2 = ti.GetTiles(t => t.SelectionGroup == TileSelectionGroups.Green);
+            var group3 = ti.GetTiles(t => t.SelectionGroup == TileSelectionGroups.Red);
             int max = group1.Count + group2.Count;
             float count = 0;
 
@@ -339,7 +384,7 @@ namespace StrategyGameHelper
         public static void RefreshTileRuleTest()
         {
             //Get all selected tiles.
-            var tiles = SourceImages[SelectedSource].GetSelectedTiles().Select(t => t.Index).Distinct().ToList();
+            var tiles = SourceImages[SelectedSource].GetTiles().Select(t => t.Index).Distinct().ToList();
 
             //Get neighbor tiles that have not had a rule created for them yet.
             var n = tiles.Except(PossibleNeighbors(SelectedTile, Direction.North, tiles, RuleType.Allowed)).ToList();
@@ -377,7 +422,7 @@ namespace StrategyGameHelper
             var tiles = new List<int>();
             foreach (var t in SourceImages[SelectedSource].GetTiles())
             {
-                if (t.Attribute != TileAttribute.None) { tiles.Add(t.Index); }
+                if (t.SelectionGroup != TileSelectionGroups.None) { tiles.Add(t.Index); }
             }
             tiles.Distinct();
 
@@ -499,6 +544,10 @@ namespace StrategyGameHelper
         public static int GetHeight(TileTab tab)
         {
             return GetTileImage(tab).Image.Height;
+        }
+        public static List<Tile> GetSelectedTiles()
+        {
+            return SourceImages[SelectedSource].GetTiles().Where(t => SelectedTiles.Contains(t.Index)).ToList();
         }
     }
 }
